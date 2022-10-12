@@ -5,11 +5,12 @@ import pandas as pd
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', '#808080']
 
 for i in range(1,9):
-    data = pd.read_csv('fuzzer0' + str(i), sep='\,\ ', engine='python')
-    data.columns = data.columns.str.replace('# ', '')
-    data = data.groupby('edges_found').mean()
-    relative_time_list = data['relative_time'].tolist()
-    edges_found_list = data.index.values
+    df = pd.read_csv('fuzzer0' + str(i), sep='\,\ ', engine='python')
+    df.columns = df.columns.str.replace('# ', '')
+
+    df = df.groupby('edges_found').mean()
+    relative_time_list = df['relative_time'].tolist()
+    edges_found_list = df.index.values
 
     plt.figure(1)
     xmin, xmax = min(relative_time_list), max(relative_time_list)
@@ -26,7 +27,7 @@ plt.show()
 
 # total_execs plot
 
-# total_execs_list = data['total_execs'].tolist()
+# total_execs_list = df['total_execs'].tolist()
 # plt.figure(2)
 # ymin, ymax = min(total_execs_list), max(total_execs_list)
 # plt.ylim(ymin, ymax)
