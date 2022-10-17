@@ -2,13 +2,15 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+# import warnings
+# warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 # import seaborn as sns
 # from scipy.interpolate import make_interp_spline
 
 INTERVAL_SECONDS = int(sys.argv[1])
 
 # Function to find the number closest to n which is divisible by m
-def closestNumber(n, m) :
+def closestNumber(n, m):
     q = int(n / m)
     n1 = m * q
     n2 = (m * (q + 1))
@@ -17,20 +19,32 @@ def closestNumber(n, m) :
         return n1
     return n2
 
-# Loop to get values in  given interval
+def average(x, y):
+    return round((x+y)/2)
+
+# Loop each fuzzer CSV file to get edges_found and total_execs values in given time interval
 for i in range(1,9):
     df = pd.read_csv('fuzzer0' + str(i), sep='\,\ ', engine='python')
     df.columns = df.columns.str.replace('# ', '')
     
     new_df = df[['relative_time', 'edges_found']].copy()
-    first_time_value_in_df = int(new_df['relative_time'].iloc[0])
-    current_time_value = closestNumber(first_time_value_in_df, INTERVAL_SECONDS)
-    last_time_value_in_df = int(new_df['relative_time'].iloc[-1])
-    max_time_value = closestNumber(last_time_value_in_df, INTERVAL_SECONDS)
+    n_rows_range = range(len(new_df.index))
+    graph_values_list = []
+    add_value_counter = 0
     
-    #while(current_time_value <= max_time_value):
-
-
+    for i in n_rows_range:
+        time_value = int(new_df['relative_time'].iloc[i])
+        rounded_time_value = closestNumber(time_value, INTERVAL_SECONDS)
+        edge_value = new_df['edges_found'].iloc[i]
+        
+        if graph_values_list:
+            if(rounded_time_value - graph_values_list[i-1+add_value_counter][0] > INTERVAL_SECONDS):
+                graph_values_list.append([rounded_time_value - INTERVAL_SECONDS, average(graph_values_list[i-1+add_value_counter][1], edge_value)])
+                add_value_counter += 1
+        
+        graph_values_list.append([rounded_time_value, edge_value])
+        
+    
 
 # -------------------------
   
