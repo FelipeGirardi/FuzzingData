@@ -2,8 +2,6 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-# import warnings
-# warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 # import seaborn as sns
 # from scipy.interpolate import make_interp_spline
 
@@ -20,7 +18,13 @@ def closestNumber(n, m):
     return n2
 
 def average(x, y):
-    return round((x+y)/2)
+    return int(round((x+y)/2))
+
+def mean(lst):
+    return int(round(sum(lst) / len(lst)))
+
+values_list = []
+edge_values_dict = {}
 
 # Loop each fuzzer CSV file to get edges_found and total_execs values in given time interval
 for i in range(1,9):
@@ -29,22 +33,42 @@ for i in range(1,9):
     
     new_df = df[['relative_time', 'edges_found']].copy()
     n_rows_range = range(len(new_df.index))
-    graph_values_list = []
-    add_value_counter = 0
+    prev_time_value = -1
     
     for i in n_rows_range:
         time_value = int(new_df['relative_time'].iloc[i])
         rounded_time_value = closestNumber(time_value, INTERVAL_SECONDS)
+        rounded_time_value_str = str(rounded_time_value)
         edge_value = new_df['edges_found'].iloc[i]
+        edge_dict_keys = list(edge_values_dict.keys())
+
+        if prev_time_value >= 0:
+            if rounded_time_value - prev_time_value > INTERVAL_SECONDS:
+                mid_time_value = average(rounded_time_value, prev_time_value)
+                mid_time_value_str = str(mid_time_value)
+                if mid_time_value_str not in edge_dict_keys:
+                    edge_values_dict[mid_time_value_str] = []
+                edge_values_dict[mid_time_value_str] += [average(prev_edge_value, edge_value)]
+            elif rounded_time_value == prev_time_value:
+                continue
         
-        if graph_values_list:
-            if(rounded_time_value - graph_values_list[i-1+add_value_counter][0] > INTERVAL_SECONDS):
-                graph_values_list.append([rounded_time_value - INTERVAL_SECONDS, average(graph_values_list[i-1+add_value_counter][1], edge_value)])
-                add_value_counter += 1
+        if rounded_time_value_str not in edge_dict_keys:
+            edge_values_dict[rounded_time_value_str] = []
         
-        graph_values_list.append([rounded_time_value, edge_value])
-        
-    
+        edge_values_dict[rounded_time_value_str] += [edge_value]
+        prev_time_value = rounded_time_value
+        prev_edge_value = edge_value
+
+graph_time_values = edge_dict_keys
+graph_edge_mean_values = []
+graph_edge_min_values = []
+graph_edge_max_values = []
+
+for key in edge_values_dict:
+    edge_val_list = edge_values_dict[key]
+    graph_edge_mean_values.append(mean(edge_val_list))
+    graph_edge_min_values.append(min(edge_val_list))
+    graph_edge_max_values.append(max(edge_val_list))
 
 # -------------------------
   
