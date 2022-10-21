@@ -59,16 +59,28 @@ for i in range(1,9):
         prev_time_value = rounded_time_value
         prev_edge_value = edge_value
 
-graph_time_values = edge_dict_keys
+graph_time_values = []
 graph_edge_mean_values = []
 graph_edge_min_values = []
 graph_edge_max_values = []
 
 for key in edge_values_dict:
+    graph_time_values.append(int(key))
     edge_val_list = edge_values_dict[key]
     graph_edge_mean_values.append(mean(edge_val_list))
     graph_edge_min_values.append(min(edge_val_list))
     graph_edge_max_values.append(max(edge_val_list))
+
+print(graph_time_values)
+
+# plt.xlim(0, max(graph_time_values))
+# plt.ylim(0, max(graph_edge_mean_values))
+plt.xlabel('Time (s)')
+plt.ylabel('Edges found')
+plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='r')
+plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, color='g')
+plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, color='b')
+plt.show()
 
 # -------------------------
   
