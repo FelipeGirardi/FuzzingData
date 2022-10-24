@@ -25,15 +25,18 @@ def mean(lst):
 
 values_list = []
 edge_values_dict = {}
+exec_values_dict = {}
 
 # Loop each fuzzer CSV file to get edges_found and total_execs values in given time interval
 for i in range(1,9):
     df = pd.read_csv('fuzzer0' + str(i), sep='\,\ ', engine='python')
     df.columns = df.columns.str.replace('# ', '')
     
-    new_df = df[['relative_time', 'edges_found']].copy()
+    new_df = df[['relative_time', 'total_execs', 'edges_found']].copy()
     n_rows_range = range(len(new_df.index))
     prev_time_value = -1
+    prev_edge_value = 0
+    prev_exec_value = 0
     
     for i in n_rows_range:
         time_value = int(new_df['relative_time'].iloc[i])
@@ -41,6 +44,8 @@ for i in range(1,9):
         rounded_time_value_str = str(rounded_time_value)
         edge_value = new_df['edges_found'].iloc[i]
         edge_dict_keys = list(edge_values_dict.keys())
+        exec_value = new_df['total_execs'].iloc[i]
+        exec_dict_keys = list(exec_values_dict.keys())
 
         if prev_time_value >= 0:
             if rounded_time_value - prev_time_value > INTERVAL_SECONDS:
@@ -48,83 +53,84 @@ for i in range(1,9):
                 mid_time_value_str = str(mid_time_value)
                 if mid_time_value_str not in edge_dict_keys:
                     edge_values_dict[mid_time_value_str] = []
+                if mid_time_value_str not in exec_dict_keys:
+                    exec_values_dict[mid_time_value_str] = []
                 edge_values_dict[mid_time_value_str] += [average(prev_edge_value, edge_value)]
+                exec_values_dict[mid_time_value_str] += [average(prev_exec_value, exec_value)]
             elif rounded_time_value == prev_time_value:
                 continue
         
         if rounded_time_value_str not in edge_dict_keys:
             edge_values_dict[rounded_time_value_str] = []
+        if rounded_time_value_str not in exec_dict_keys:
+            exec_values_dict[rounded_time_value_str] = []
         
         edge_values_dict[rounded_time_value_str] += [edge_value]
+        exec_values_dict[rounded_time_value_str] += [exec_value]
         prev_time_value = rounded_time_value
         prev_edge_value = edge_value
+        prev_exec_value = exec_value
 
 graph_time_values = []
+graph_time_values.append(0)
+
 graph_edge_mean_values = []
 graph_edge_min_values = []
 graph_edge_max_values = []
+graph_edge_mean_values.append(0)
+graph_edge_min_values.append(0)
+graph_edge_max_values.append(0)
+
+graph_exec_mean_values = []
+graph_exec_min_values = []
+graph_exec_max_values = []
+graph_exec_mean_values.append(0)
+graph_exec_min_values.append(0)
+graph_exec_max_values.append(0)
+
+# Transforming edge values from dict to list
 
 for key in edge_values_dict:
     graph_time_values.append(int(key))
     edge_val_list = edge_values_dict[key]
     graph_edge_mean_values.append(mean(edge_val_list))
-    graph_edge_min_values.append(min(edge_val_list))
-    graph_edge_max_values.append(max(edge_val_list))
+    min_edge_value = min(edge_val_list)
+    graph_edge_min_values.append(min_edge_value)
+    max_edge_value = max(edge_val_list)
+    graph_edge_max_values.append(max_edge_value)
 
-print(graph_time_values)
+# Transforming exec values from dict to list
 
-# plt.xlim(0, max(graph_time_values))
-# plt.ylim(0, max(graph_edge_mean_values))
+for key in exec_values_dict:
+    exec_val_list = exec_values_dict[key]
+    graph_exec_mean_values.append(mean(exec_val_list))
+    min_exec_value = min(exec_val_list)
+    graph_exec_min_values.append(min_exec_value)
+    max_exec_value = max(exec_val_list)
+    graph_exec_max_values.append(max_exec_value)
+
+# Plotting edges graph
+
+plt.figure(1)
 plt.xlabel('Time (s)')
 plt.ylabel('Edges found')
-plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='r')
-plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, color='g')
-plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, color='b')
+plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='b')
+plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
+plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
+plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.3)
+plt.xlim(left=0)
+plt.ylim(bottom=0)
+
+# Plotting execs graph
+
+plt.figure(2)
+plt.xlabel('Time (s)')
+plt.ylabel('Total executions')
+plt.plot(graph_time_values, graph_exec_mean_values, linewidth=2, color='b')
+plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
+plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
+plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.3)
+plt.xlim(left=0)
+plt.ylim(bottom=0)
+
 plt.show()
-
-# -------------------------
-  
-# Plotting code (for later)
-
-# final_result_df = pd.concat(result_df, ignore_index=True)
-# final_result_df = final_result_df.groupby('relative_time').mean()
-
-# relative_time_list = final_result_df.index.values
-# edges_found_list = final_result_df['edges_found']
-# x_y_spline = make_interp_spline(relative_time_list, edges_found_list)
-# x_ = np.linspace(relative_time_list.min(), relative_time_list.max(), 500)
-# y_ = x_y_spline(x_)
-
-# plt.plot(x_, y_)
-
-# xmax = max(final_result_df['relative_time'])
-# ymax = max(final_result_df['edges_found'])
-# plt.ylim(0, ymax + 100)
-# plt.xlim(0, xmax + 100)
-# sns.lineplot(data=final_result_df, x="relative_time", y="edges_found", errorbar=('ci', 100))
-
-# plt.show()
-
-# df = final_result_df.groupby('relative_time').mean()
-# relative_time_list = final_result_df.index.values
-# edges_found_list = final_result_df['edges_found']
-#     # edges_found_list_mean = df['edges_found'].mean()
-
-# plt.figure(1)
-# xmin, xmax = min(relative_time_list), max(relative_time_list)
-# ymin, ymax = min(edges_found_list), max(edges_found_list)
-# plt.ylim(ymin, ymax)
-# plt.xlim(xmin, xmax)
-# plt.xlabel('Time (s)')
-# plt.ylabel('Edges found')
-# plt.plot(relative_time_list, edges_found_list, linewidth = 2.0, color='darkorchid')
-    
-# total_execs plot
-# total_execs_list = df['total_execs']
-# plt.figure(2)
-# ymin, ymax = min(total_execs_list), max(total_execs_list)
-# plt.ylim(ymin, ymax)
-# plt.xlim(xmin, xmax)
-# plt.plot(relative_time_list, total_execs_list, linewidth = 2.0, color=colors[i-1])
-# plt.xlabel('Time (s)')
-# plt.ylabel('Total executions')
