@@ -2,6 +2,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statistics
 # import seaborn as sns
 # from scipy.interpolate import make_interp_spline
 
@@ -77,16 +78,28 @@ graph_time_values.append(0)
 graph_edge_mean_values = []
 graph_edge_min_values = []
 graph_edge_max_values = []
+graph_edge_median_values = []
+graph_edge_q3_values = []
+graph_edge_q1_values = []
 graph_edge_mean_values.append(0)
 graph_edge_min_values.append(0)
 graph_edge_max_values.append(0)
+graph_edge_median_values.append(0)
+graph_edge_q3_values.append(0)
+graph_edge_q1_values.append(0)
 
 graph_exec_mean_values = []
 graph_exec_min_values = []
 graph_exec_max_values = []
+graph_exec_median_values = []
+graph_exec_q3_values = []
+graph_exec_q1_values = []
 graph_exec_mean_values.append(0)
 graph_exec_min_values.append(0)
 graph_exec_max_values.append(0)
+graph_exec_median_values.append(0)
+graph_exec_q3_values.append(0)
+graph_exec_q1_values.append(0)
 
 # Transforming edge values from dict to list
 
@@ -94,42 +107,80 @@ for key in edge_values_dict:
     graph_time_values.append(int(key))
     edge_val_list = edge_values_dict[key]
     graph_edge_mean_values.append(mean(edge_val_list))
+    graph_edge_median_values.append(statistics.median(edge_val_list))
     min_edge_value = min(edge_val_list)
     graph_edge_min_values.append(min_edge_value)
     max_edge_value = max(edge_val_list)
     graph_edge_max_values.append(max_edge_value)
+
+    edge_val_list_np = np.array(edge_val_list)
+    q3_edge, q1_edge = np.percentile(edge_val_list_np, [75, 25])
+    graph_edge_q3_values.append(q3_edge)
+    graph_edge_q1_values.append(q1_edge)
 
 # Transforming exec values from dict to list
 
 for key in exec_values_dict:
     exec_val_list = exec_values_dict[key]
     graph_exec_mean_values.append(mean(exec_val_list))
+    graph_exec_median_values.append(statistics.median(exec_val_list))
     min_exec_value = min(exec_val_list)
     graph_exec_min_values.append(min_exec_value)
     max_exec_value = max(exec_val_list)
     graph_exec_max_values.append(max_exec_value)
 
-# Plotting edges graph
+    exec_val_list_np = np.array(exec_val_list)
+    q3_exec, q1_exec = np.percentile(exec_val_list_np, [75, 25])
+    graph_exec_q3_values.append(q3_exec)
+    graph_exec_q1_values.append(q1_exec)
+
+# Plotting mean edges graph
 
 plt.figure(1)
 plt.xlabel('Time (s)')
 plt.ylabel('Edges found')
 plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='b')
-plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
-plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
+# plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
+# plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
 plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.3)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
-# Plotting execs graph
+# Plotting mean execs graph
 
 plt.figure(2)
 plt.xlabel('Time (s)')
 plt.ylabel('Total executions')
 plt.plot(graph_time_values, graph_exec_mean_values, linewidth=2, color='b')
-plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
-plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
+# plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
+# plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
 plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.3)
+plt.xlim(left=0)
+plt.ylim(bottom=0)
+
+# Plotting median/IQR edges graph
+
+plt.figure(3)
+plt.xlabel('Time (s)')
+plt.ylabel('Edges found')
+plt.plot(graph_time_values, graph_edge_median_values, linewidth=2, color='b')
+# plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
+# plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
+plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.3)
+plt.fill_between(graph_time_values, graph_edge_q3_values, graph_edge_q1_values, color='b', alpha=0.5)
+plt.xlim(left=0)
+plt.ylim(bottom=0)
+
+# Plotting median/IQR execs graph
+
+plt.figure(4)
+plt.xlabel('Time (s)')
+plt.ylabel('Total executions')
+plt.plot(graph_time_values, graph_exec_median_values, linewidth=2, color='b')
+plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
+plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
+plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.3)
+plt.fill_between(graph_time_values, graph_exec_q3_values, graph_exec_q1_values, color='b', alpha=0.5)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
