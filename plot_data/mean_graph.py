@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statistics
-# import seaborn as sns
-# from scipy.interpolate import make_interp_spline
 
 INTERVAL_SECONDS = int(sys.argv[1])
 
@@ -73,7 +71,6 @@ for i in range(1,9):
         prev_exec_value = exec_value
 
 graph_time_values = []
-graph_time_values.append(0)
 
 graph_edge_mean_values = []
 graph_edge_min_values = []
@@ -81,12 +78,6 @@ graph_edge_max_values = []
 graph_edge_median_values = []
 graph_edge_q3_values = []
 graph_edge_q1_values = []
-graph_edge_mean_values.append(0)
-graph_edge_min_values.append(0)
-graph_edge_max_values.append(0)
-graph_edge_median_values.append(0)
-graph_edge_q3_values.append(0)
-graph_edge_q1_values.append(0)
 
 graph_exec_mean_values = []
 graph_exec_min_values = []
@@ -94,12 +85,6 @@ graph_exec_max_values = []
 graph_exec_median_values = []
 graph_exec_q3_values = []
 graph_exec_q1_values = []
-graph_exec_mean_values.append(0)
-graph_exec_min_values.append(0)
-graph_exec_max_values.append(0)
-graph_exec_median_values.append(0)
-graph_exec_q3_values.append(0)
-graph_exec_q1_values.append(0)
 
 # Transforming edge values from dict to list
 
@@ -140,9 +125,9 @@ plt.figure(1)
 plt.xlabel('Time (s)')
 plt.ylabel('Edges found')
 plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='b')
-# plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
-# plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
-plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.3)
+# plt.plot(graph_time_values, graph_edge_min_values, linewidth=1, color='b')
+# plt.plot(graph_time_values, graph_edge_max_values, linewidth=1, color='b')
+plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.5)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
@@ -152,9 +137,9 @@ plt.figure(2)
 plt.xlabel('Time (s)')
 plt.ylabel('Total executions')
 plt.plot(graph_time_values, graph_exec_mean_values, linewidth=2, color='b')
-# plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
-# plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
-plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.3)
+# plt.plot(graph_time_values, graph_exec_min_values, linewidth=1, color='b')
+# plt.plot(graph_time_values, graph_exec_max_values, linewidth=1, color='b')
+plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.5)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
@@ -164,10 +149,10 @@ plt.figure(3)
 plt.xlabel('Time (s)')
 plt.ylabel('Edges found')
 plt.plot(graph_time_values, graph_edge_median_values, linewidth=2, color='b')
-# plt.plot(graph_time_values, graph_edge_max_values, linewidth=2, linestyle='dashed', color='b')
-# plt.plot(graph_time_values, graph_edge_min_values, linewidth=2, linestyle='dashed', color='b')
-plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.3)
-plt.fill_between(graph_time_values, graph_edge_q3_values, graph_edge_q1_values, color='b', alpha=0.5)
+# plt.plot(graph_time_values, graph_edge_max_values, linewidth=1, color='b')
+# plt.plot(graph_time_values, graph_edge_min_values, linewidth=1, color='b')
+plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='b', alpha=0.5)
+plt.fill_between(graph_time_values, graph_edge_q3_values, graph_edge_q1_values, color='b', alpha=0.3)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
@@ -177,10 +162,10 @@ plt.figure(4)
 plt.xlabel('Time (s)')
 plt.ylabel('Total executions')
 plt.plot(graph_time_values, graph_exec_median_values, linewidth=2, color='b')
-plt.plot(graph_time_values, graph_exec_max_values, linewidth=2, linestyle='dashed', color='b')
-plt.plot(graph_time_values, graph_exec_min_values, linewidth=2, linestyle='dashed', color='b')
-plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.3)
-plt.fill_between(graph_time_values, graph_exec_q3_values, graph_exec_q1_values, color='b', alpha=0.5)
+# plt.plot(graph_time_values, graph_exec_max_values, linewidth=1, color='b')
+# plt.plot(graph_time_values, graph_exec_min_values, linewidth=1, color='b')
+plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='b', alpha=0.5)
+plt.fill_between(graph_time_values, graph_exec_q3_values, graph_exec_q1_values, color='b', alpha=0.3)
 plt.xlim(left=0)
 plt.ylim(bottom=0)
 
