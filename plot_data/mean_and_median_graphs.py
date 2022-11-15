@@ -22,20 +22,20 @@ def average(x, y):
 def mean(lst):
     return int(round(sum(lst) / len(lst)))
 
-def evaluate(a, x, t, edge_values, time_values):
+def evaluate(a, x, t, edge_values, x_values):
     edges_covered_mult_by_percent = a * x
-    target_time = (1-a) * t
-    time_found = float("inf")
+    target_x = (1-a) * t
+    x_found = float("inf")
     for i, elem in enumerate(edge_values):
         if elem >= edges_covered_mult_by_percent:
             edge_found = elem
-            time_found = time_values[i]
+            x_found = x_values[i]
             break
 
-    if time_found <= target_time:
-        return [edge_found, time_found]
+    if x_found <= target_x:
+        return [edge_found, x_found]
     else:
-        return [-1, -1]
+        return [-1]
 
 
 values_list = []
@@ -181,20 +181,40 @@ plt.show()
 
 # Calculating the relation rule between execution time and number of edges found
 
-total_time = graph_time_values[-1]
 total_edges_covered = graph_edge_mean_values[-1]
+total_time = graph_time_values[-1]
+total_execs = graph_exec_mean_values[-1]
 percent_result = 0
 
 for i in range(99, 0, -1):
     percent_coverage = i/100
-    result = evaluate(percent_coverage, total_edges_covered, total_time, graph_edge_mean_values, graph_time_values)
-    if result[0] != -1:
+    result_time = evaluate(percent_coverage, total_edges_covered, total_time, graph_edge_mean_values, graph_time_values)
+    if result_time[0] != -1:
         percent_coverage_result = percent_coverage
         percent_time_result = 1 - percent_coverage_result
-        edge_result = result[0]
-        time_result = result[1]
+        edge_result = result_time[0]
+        time_result = result_time[1]
+        print("Result for x = exec time and y = edges found:")
         print("%.2f" % percent_coverage_result)
         print("%.2f" % percent_time_result)
         print(edge_result)
         print(time_result)
+        print('-----')
+        break
+
+# Calculating the relation rule between number of executions and number of edges found
+
+for i in range(99, 0, -1):
+    percent_coverage = i/100
+    result_exec = evaluate(percent_coverage, total_edges_covered, total_execs, graph_edge_mean_values, graph_exec_mean_values)
+    if result_exec[0] != -1:
+        percent_coverage_result = percent_coverage
+        percent_exec_result = 1 - percent_coverage_result
+        edge_result = result_exec[0]
+        exec_result = result_exec[1]
+        print("Result for x = number of execs and y = edges found:")
+        print("%.2f" % percent_coverage_result)
+        print("%.2f" % percent_exec_result)
+        print(edge_result)
+        print(exec_result)
         break
