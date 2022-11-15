@@ -22,6 +22,22 @@ def average(x, y):
 def mean(lst):
     return int(round(sum(lst) / len(lst)))
 
+def evaluate(a, x, t, edge_values, time_values):
+    edges_covered_mult_by_percent = a * x
+    target_time = (1-a) * t
+    time_found = float("inf")
+    for i, elem in enumerate(edge_values):
+        if elem >= edges_covered_mult_by_percent:
+            edge_found = elem
+            time_found = time_values[i]
+            break
+
+    if time_found <= target_time:
+        return [edge_found, time_found]
+    else:
+        return [-1, -1]
+
+
 values_list = []
 edge_values_dict = {}
 exec_values_dict = {}
@@ -170,3 +186,23 @@ plt.xlim(left=0)
 plt.ylim(bottom=0)
 
 plt.show()
+
+# Calculating the relation rule between execution time and number of edges found
+
+total_time = graph_time_values[-1]
+total_edges_covered = graph_edge_mean_values[-1]
+percent_result = 0
+
+for i in range(99, 0, -1):
+    percent_coverage = i/100
+    result = evaluate(percent_coverage, total_edges_covered, total_time, graph_edge_mean_values, graph_time_values)
+    if result[0] != -1:
+        percent_coverage_result = percent_coverage
+        percent_time_result = 1 - percent_coverage_result
+        edge_result = result[0]
+        time_result = result[1]
+        print("%.2f" % percent_coverage_result)
+        print("%.2f" % percent_time_result)
+        print(edge_result)
+        print(time_result)
+        break
