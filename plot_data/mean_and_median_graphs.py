@@ -1,10 +1,13 @@
 import sys
+import os
+import shutil
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statistics
 
 INTERVAL_SECONDS = int(sys.argv[1])
+MAX_TIME = int(sys.argv[2])
 
 # Function to find the number closest to n which is divisible by m
 def closestNumber(n, m):
@@ -22,6 +25,7 @@ def average(x, y):
 def mean(lst):
     return int(round(sum(lst) / len(lst)))
 
+# Function to evaluate the percentage of edges covered in a percentage of time or executions
 def evaluate(a, x, t, edge_values, x_values):
     edges_covered_mult_by_percent = a * x
     target_x = (1-a) * t
@@ -61,6 +65,9 @@ for i in range(1,9):
         edge_dict_keys = list(edge_values_dict.keys())
         exec_value = new_df['total_execs'].iloc[i]
         exec_dict_keys = list(exec_values_dict.keys())
+        
+        if rounded_time_value > MAX_TIME:
+            break
 
         if prev_time_value >= 0:
             if rounded_time_value - prev_time_value > INTERVAL_SECONDS:
@@ -102,6 +109,18 @@ graph_exec_median_values = []
 graph_exec_q3_values = []
 graph_exec_q1_values = []
 
+edge_result = 0
+time_result = 0
+graph_num = 1
+graphs_directory = 'graphs'
+try:
+    os.mkdir(graphs_directory)
+    os.chdir(graphs_directory)
+except FileExistsError:
+    shutil.rmtree(graphs_directory)
+    os.mkdir(graphs_directory)
+    os.chdir(graphs_directory)
+
 # Transforming edge values from dict to list
 
 for key in edge_values_dict:
@@ -118,116 +137,92 @@ for key in edge_values_dict:
     q3_edge, q1_edge = np.percentile(edge_val_list_np, [75, 25])
     graph_edge_q3_values.append(q3_edge)
     graph_edge_q1_values.append(q1_edge)
+    
+    # Calculating the relation rule between execution time and number of edges found
+    
+    for i in range(99, 0, -1):
+        percent_coverage = i/100
+        result = evaluate(percent_coverage, graph_edge_mean_values[-1], graph_time_values[-1], graph_edge_mean_values, graph_time_values)
+        if result[0] != -1:
+            if result[0] != edge_result or result[1] != time_result:
+                percent_coverage_result = percent_coverage
+                percent_time_result = 1 - percent_coverage_result
+                edge_result = result[0]
+                time_result = result[1]
+                
+                print("Result for x = exec time and y = edges found:")
+                print(str(edge_result) + ' edges found in ' + str(time_result) + 's')
+                print(f'{round(percent_coverage_result * 100)}% of edges found in {round(percent_time_result * 100)}% of time')
+                print('-----')
+                
+                # Plotting mean edges graph
+                
+                plt.figure()
+                plt.xlabel('Time (s)')
+                plt.ylabel('Edges found')
+                plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='b')
+                plt.plot(time_result, edge_result, 'ro')
+                plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='royalblue', alpha=0.6)
+                plt.xlim(left=0)
+                plt.ylim(bottom=0)
+                plt.xlabel(f'{edge_result} edges found in {time_result}s, {round(percent_coverage_result * 100)}% of coverage obtained in {round(percent_time_result * 100)}% of execution time')
+                plt.savefig('mean_time_edge_graph_' + str(graph_num))
+                
+                # Plotting median edges graph
+                
+                plt.figure()
+                plt.xlabel('Time (s)')
+                plt.ylabel('Edges found')
+                plt.plot(graph_time_values, graph_edge_median_values, linewidth=2, color='b')
+                plt.plot(time_result, edge_result, 'ro')
+                plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='royalblue', alpha=0.6)
+                plt.fill_between(graph_time_values, graph_edge_q3_values, graph_edge_q1_values, color='royalblue', alpha=0.8)
+                plt.xlim(left=0)
+                plt.ylim(bottom=0)
+                plt.xlabel(f'{edge_result} edges found in {time_result}s, {round(percent_coverage_result * 100)}% of coverage obtained in {round(percent_time_result * 100)}% of execution time')
+                plt.savefig('median_time_edge_graph_' + str(graph_num))
+                
+                graph_num += 1
+            break
+        
 
 # Transforming exec values from dict to list
 
-for key in exec_values_dict:
-    exec_val_list = exec_values_dict[key]
-    graph_exec_mean_values.append(mean(exec_val_list))
-    graph_exec_median_values.append(statistics.median(exec_val_list))
-    min_exec_value = min(exec_val_list)
-    graph_exec_min_values.append(min_exec_value)
-    max_exec_value = max(exec_val_list)
-    graph_exec_max_values.append(max_exec_value)
+# for key in exec_values_dict:
+#     exec_val_list = exec_values_dict[key]
+#     graph_exec_mean_values.append(mean(exec_val_list))
+#     graph_exec_median_values.append(statistics.median(exec_val_list))
+#     min_exec_value = min(exec_val_list)
+#     graph_exec_min_values.append(min_exec_value)
+#     max_exec_value = max(exec_val_list)
+#     graph_exec_max_values.append(max_exec_value)
 
-    exec_val_list_np = np.array(exec_val_list)
-    q3_exec, q1_exec = np.percentile(exec_val_list_np, [75, 25])
-    graph_exec_q3_values.append(q3_exec)
-    graph_exec_q1_values.append(q1_exec)
-
-# Calculating the relation rule between execution time and number of edges found
-
-total_edges_covered = graph_edge_mean_values[-1]
-total_time = graph_time_values[-1]
-total_execs = graph_exec_mean_values[-1]
-percent_coverage_result = 0
-percent_time_result = 0
-percent_exec_result = 0
-time_result = 0
-edge_result = 0
-exec_result = 0
-
-for i in range(99, 0, -1):
-    percent_coverage = i/100
-    result_time = evaluate(percent_coverage, total_edges_covered, total_time, graph_edge_mean_values, graph_time_values)
-    if result_time[0] != -1:
-        percent_coverage_result = percent_coverage
-        percent_time_result = 1 - percent_coverage_result
-        edge_result = result_time[0]
-        time_result = result_time[1]
-        print("Result for x = exec time and y = edges found:")
-        print("%.2f" % percent_coverage_result)
-        print("%.2f" % percent_time_result)
-        print(edge_result)
-        print(time_result)
-        print('-----')
-        break
-
-# Calculating the relation rule between number of executions and number of edges found
-
-for i in range(99, 0, -1):
-    percent_coverage = i/100
-    result_exec = evaluate(percent_coverage, total_edges_covered, total_execs, graph_edge_mean_values, graph_exec_mean_values)
-    if result_exec[0] != -1:
-        percent_coverage_result = percent_coverage
-        percent_exec_result = 1 - percent_coverage_result
-        edge_result = result_exec[0]
-        exec_result = result_exec[1]
-        print("Result for x = number of execs and y = edges found:")
-        print("%.2f" % percent_coverage_result)
-        print("%.2f" % percent_exec_result)
-        print(edge_result)
-        print(exec_result)
-        break
-
-# Plotting mean edges graph
-
-plt.figure(1)
-plt.xlabel('Time (s)')
-plt.ylabel('Edges found')
-plt.plot(graph_time_values, graph_edge_mean_values, linewidth=2, color='b')
-plt.plot(time_result, edge_result, 'ro')
-plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='royalblue', alpha=0.6)
-plt.xlim(left=0)
-plt.ylim(bottom=0)
-plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_time_result * 100}% of execution time\n{edge_result} edges found in {time_result}s')
-
-# Plotting median/IQR edges graph
-
-plt.figure(2)
-plt.xlabel('Time (s)')
-plt.ylabel('Edges found')
-plt.plot(graph_time_values, graph_edge_median_values, linewidth=2, color='b')
-plt.plot(time_result, edge_result, 'ro')
-plt.fill_between(graph_time_values, graph_edge_max_values, graph_edge_min_values, color='royalblue', alpha=0.6)
-plt.fill_between(graph_time_values, graph_edge_q3_values, graph_edge_q1_values, color='royalblue', alpha=0.8)
-plt.xlim(left=0)
-plt.ylim(bottom=0)
-plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_time_result * 100}% of execution time\n{edge_result} edges found in {time_result}s')
+#     exec_val_list_np = np.array(exec_val_list)
+#     q3_exec, q1_exec = np.percentile(exec_val_list_np, [75, 25])
+#     graph_exec_q3_values.append(q3_exec)
+#     graph_exec_q1_values.append(q1_exec)
 
 # Plotting mean execs graph
 
-plt.figure(3)
-plt.xlabel('Time (s)')
-plt.ylabel('Total executions')
-plt.plot(graph_time_values, graph_exec_mean_values, linewidth=2, color='b')
-plt.plot(time_result, exec_result, 'ro')
-plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='royalblue', alpha=0.8)
-plt.xlim(left=0)
-plt.ylim(bottom=0)
-plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_exec_result * 100}% of executions\n{edge_result} edges found in {exec_result} executions')
+# plt.figure(3)
+# plt.xlabel('Time (s)')
+# plt.ylabel('Total executions')
+# plt.plot(graph_time_values, graph_exec_mean_values, linewidth=2, color='b')
+# plt.plot(time_result, exec_result, 'ro')
+# plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='royalblue', alpha=0.8)
+# plt.xlim(left=0)
+# plt.ylim(bottom=0)
+# plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_exec_result * 100}% of executions\n{edge_result} edges found in {exec_result} executions')
 
-# Plotting median/IQR execs graph
+# # Plotting median/IQR execs graph
 
-plt.figure(4)
-plt.xlabel('Time (s)')
-plt.ylabel('Total executions')
-plt.plot(graph_time_values, graph_exec_median_values, linewidth=2, color='b')
-plt.plot(time_result, exec_result, 'ro')
-plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='royalblue', alpha=0.6)
-plt.fill_between(graph_time_values, graph_exec_q3_values, graph_exec_q1_values, color='royalblue', alpha=0.8)
-plt.xlim(left=0)
-plt.ylim(bottom=0)
-plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_exec_result * 100}% of executions\n{edge_result} edges found in {exec_result} executions')
-
-plt.show()
+# plt.figure(4)
+# plt.xlabel('Time (s)')
+# plt.ylabel('Total executions')
+# plt.plot(graph_time_values, graph_exec_median_values, linewidth=2, color='b')
+# plt.plot(time_result, exec_result, 'ro')
+# plt.fill_between(graph_time_values, graph_exec_max_values, graph_exec_min_values, color='royalblue', alpha=0.6)
+# plt.fill_between(graph_time_values, graph_exec_q3_values, graph_exec_q1_values, color='royalblue', alpha=0.8)
+# plt.xlim(left=0)
+# plt.ylim(bottom=0)
+# plt.xlabel(f'{percent_coverage_result * 100}% of coverage obtained in {percent_exec_result * 100}% of executions\n{edge_result} edges found in {exec_result} executions')
