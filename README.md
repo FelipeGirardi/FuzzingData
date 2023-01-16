@@ -13,3 +13,5 @@ To execute:
 Many graphs will be generated, which represent the progression of covered edges throughout the campaign. The red dot in the graph represents the optimal point in which x% of edges were covered in (100-x)% of the time, which means that the campaign could be stopped at that point.
 
 Change the first argument number to increase or decrease the time interval in the x-axis. Change the second argument to limit the time of the campaign.
+
+The treemaps folder contains treemap visualizations for fuzzer coverage data.
