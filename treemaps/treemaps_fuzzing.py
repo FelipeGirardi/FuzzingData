@@ -1,8 +1,11 @@
+import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import squarify
+
+COVERAGE_DATA_FILE = sys.argv[1]
 
 def plotGraph(values, labels, fileName, graphTitle):
     min_val = min(values)
@@ -12,12 +15,12 @@ def plotGraph(values, labels, fileName, graphTitle):
     colors = [cmap(norm(value)) for value in values]
     plt.figure()
     plt.axis('off')
-    plt.savefig(fileName)
     sns.set_style(style="whitegrid")
     squarify.plot(sizes=values, alpha=0.8, edgecolor="white", label=labels, color=colors, text_kwargs={'fontsize':8}).set(title=graphTitle)
+    plt.savefig(fileName)
     
 # Get edge data
-df = pd.read_csv('coverage_data.csv', engine='python')
+df = pd.read_csv(COVERAGE_DATA_FILE, engine='python')
 df.columns = df.columns.str.replace('# ', '')
 df = df[df['edges_total'] != 0]
 edges_covered = df['edges_covered']
