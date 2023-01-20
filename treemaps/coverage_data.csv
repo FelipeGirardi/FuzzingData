@@ -7,4 +7,11 @@ sqlite3.c,show_stats,3,7
 sqlite3.c,start_fuzz,14,15
 sqlite3.c,end_fuzz,6,6
 sqlite3.c,pause_fuzz,2,8
+sqlite3.c,edit_data,5,15
 sqlite3.c,end_campaign,16,20
+sqlite3.c,close_fuzz,0,8
+sqlite3.c,clear_all,3,3
+sqlite3.c,get_data,10,14
+sqlite3.c,save_data,1,19
+sqlite3.c,analyze_data,5,17
+sqlite3.c,new_campaign,12,21
