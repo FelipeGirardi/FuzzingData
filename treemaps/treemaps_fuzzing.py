@@ -5,17 +5,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import squarify
+import plotly.express as px
+import plotly.graph_objects as go
 
 COVERAGE_DATA_FILE = sys.argv[1]
 
-def plotSubgraph(values, label, ax, fileName):
-    # ax.set_title(label, fontsize='8')
+def plotSubgraph(values, label, ax):
+    ax.set_title(label, fontsize='8')
     is_value_covered_0 = values[0] == 0
     is_value_not_covered_0 = values[1] == 0
     values = [values[1]] if is_value_covered_0 else [values[0]] if is_value_not_covered_0 else values
     colors = ['r'] if is_value_covered_0 else ['g'] if is_value_not_covered_0 else ['g', 'r']
     squarify.plot(sizes=values, alpha=0.8, edgecolor="white", value=values, ax=ax, color=colors, text_kwargs={'fontsize':8})
-    plt.savefig(fileName)
     
 def plotPercentageGraph(values, labels, fileName):
     min_val = min(values)
@@ -52,7 +53,7 @@ for arr in edges_not_covered_split:
     height_ratios.append(np.mean(arr))
 
 fig, axs = plt.subplots(n_rows_plot, n_columns_plot, gridspec_kw={'width_ratios': width_ratios, 'height_ratios': height_ratios})
-plt.subplots_adjust(hspace=0, wspace=0)
+plt.subplots_adjust(hspace=0.5, wspace=0.1)
 
 for ax1 in axs:
     for ax2 in ax1:
@@ -64,7 +65,27 @@ for index, value_covered in enumerate(edges_covered):
         no_covered_edges_indexes.append(index)
     value_not_covered = edges_not_covered[index]
     values = [value_covered, value_not_covered]
-    plotSubgraph(values, labels[index], axs[index // n_columns_plot][index % n_columns_plot], 'edge_coverage_treemap')
+    plotSubgraph(values, labels[index], axs[index // n_columns_plot][index % n_columns_plot])
+
+plt.savefig('edge_coverage_treemap')
+
+# Plotly treemap
+df_covered = df.copy()
+df_covered = df_covered.drop('edges_not_covered', axis=1)
+df_covered = df_covered.rename({'edges_covered': 'edges'}, axis=1)
+df_not_covered = df_covered.copy()
+df_covered['covered'] = ['Covered'] * len(df_covered)
+df_covered['color'] = ['green'] * len(df_covered)
+
+df_not_covered['edges'] = edges_not_covered
+df_not_covered['covered'] = ['Not covered'] * len(df_not_covered)
+df_covered['color'] = ['red'] * len(df_not_covered)
+df_all = pd.concat([df_covered, df_not_covered])
+
+fig = px.treemap(df_all, path=['file', 'function', 'edges'], values='edges', color='covered', color_discrete_map={'(?)': df_all['color']})
+fig.update_traces(root_color="lightgrey")
+fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
+fig.show()
 
 # Treemap 2: percentage of edges covered
 for _, num in enumerate(no_covered_edges_indexes):
@@ -89,4 +110,4 @@ plotPercentageGraph(percent_edges_covered_rounded, labels_copy, 'perc_edges_cove
 # percent_edges_not_covered = percent_edges_not_covered[percent_edges_not_covered != 0]
 # plotGraph(percent_edges_not_covered, labels, 'perc_edges_not_covered_treemap', 'Percentage of edges not covered for ' + file_name)
 
-plt.show()
+# plt.show()
