@@ -110,8 +110,6 @@ df_plot = pd.concat([df_diffs, df_remainders], ignore_index=True)
 df_plot = df_plot.drop('edges_covered', axis=1)
 df_plot = df_plot.drop('edges_total', axis=1)
 
-print(df_plot)
-
 fig2 = px.treemap(df_plot, path=['file', 'function', 'ids'], values='diffs', color='isDiffOrRemainder', color_discrete_map={'(?)': 'lightgrey', 'Diff': 'green', 'Remainder': 'gray'})
 fig2.update_traces(root_color="lightgrey")
 fig2.update_layout(margin = dict(t=50, l=25, r=25, b=25))
