@@ -82,7 +82,7 @@ plt.title('Percentage of edges covered for ' + file_name)
 plt.axis('off')
 plotPercentageGraph(percent_edges_covered_rounded, labels_copy, 'perc_edges_covered_treemap')
 
-# Treemap 3: difference in edges covered between 2 files
+# Treemap 3: differential edges covered between 2 files
 df2 = pd.read_csv(COVERAGE_DATA_FILE_2, engine='python')
 df2.columns = df2.columns.str.replace('# ', '')
 df2 = df2[df2['edges_total'] != 0]
