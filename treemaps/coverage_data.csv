@@ -30,4 +30,4 @@ shell.c,clear_all,2,3
 shell.c,get_data,9,14
 shell.c,save_data,15,19
 shell.c,analyze_data,15,17
-shell.c,new_campaign,2,21
+shell.c,new_campaign,20,21
